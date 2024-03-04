@@ -24,7 +24,12 @@ return require('packer').startup(function(use)
 
 	vim.cmd('colorscheme rose-pine')
 
-
+	use {
+		'tanvirtin/vgit.nvim',
+		requires = {
+			'nvim-lua/plenary.nvim'
+		}
+	}
 
 	use {
 		'VonHeikemen/lsp-zero.nvim',
@@ -42,6 +47,11 @@ return require('packer').startup(function(use)
 			{'L3MON4D3/LuaSnip'},
 		}
 	}
+
+	use('mbbill/undotree')
+	use('tpope/vim-fugitive')
+
+
 
 	-- Automatically set up your configuration after cloning packer.nvim
 	-- Put this at the end after all plugins
