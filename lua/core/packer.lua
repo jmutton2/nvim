@@ -13,16 +13,35 @@ local packer_bootstrap = ensure_packer()
 
 return require('packer').startup(function(use)
 	use 'wbthomason/packer.nvim'
-	use 'nvim-treesitter/nvim-treesitter'
+	use 'f-person/git-blame.nvim'
+	use 'mbbill/undotree'
+	use 'tpope/vim-fugitive'
+	use 'ThePrimeagen/harpoon'
+	use "lukas-reineke/lsp-format.nvim"
+	use "nvim-treesitter/nvim-treesitter-context"
+
+	use { '~/personal/scribe' }
+	use {"nvim-treesitter/nvim-treesitter", run = ":TSUpdate"}
+
+	use {
+		'jose-elias-alvarez/null-ls.nvim',
+		requires = {'nvim-lua/plenary.nvim'}
+	}
+
 	use {
 		'nvim-telescope/telescope.nvim',
 		tag = '0.1.5',
 		requires = { {'nvim-lua/plenary.nvim'} }
 	}
-	use 'f-person/git-blame.nvim'
-	use({ 'rose-pine/neovim', as = 'rose-pine' })
 
-	vim.cmd('colorscheme rose-pine')
+	use {
+		'rose-pine/neovim',
+		as = 'rose-pine',
+		config = function()
+			vim.cmd('colorscheme rose-pine')
+		end
+	}
+
 
 	use {
 		'tanvirtin/vgit.nvim',
@@ -53,10 +72,6 @@ return require('packer').startup(function(use)
 			{'rafamadriz/friendly-snippets'},
 		}
 	}
-
-	use('mbbill/undotree')
-	use('tpope/vim-fugitive')
-	use('ThePrimeagen/harpoon')
 
 
 	-- Automatically set up your configuration after cloning packer.nvim
