@@ -27,3 +27,4 @@ end
 
 require("lspconfig").gopls.setup { on_attach = on_attach }
 require("lspconfig").tsserver.setup { on_attach = on_attach }
+require("lspconfig").svelte.setup { on_attach = on_attach }
