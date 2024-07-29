@@ -22,9 +22,10 @@ require("null-ls").setup({
 require("lsp-format").setup {}
 
 local on_attach = function(client, bufnr)
-    require("lsp-format").on_attach(client, bufnr)
+  require("lsp-format").on_attach(client, bufnr)
 end
 
 require("lspconfig").gopls.setup { on_attach = on_attach }
 require("lspconfig").tsserver.setup { on_attach = on_attach }
 require("lspconfig").svelte.setup { on_attach = on_attach }
+require("lspconfig").rust_analyzer.setup { on_attach = on_attach }
