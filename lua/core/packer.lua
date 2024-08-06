@@ -1,12 +1,12 @@
 local ensure_packer = function()
-  local fn = vim.fn
-  local install_path = fn.stdpath('data')..'/site/pack/packer/start/packer.nvim'
-  if fn.empty(fn.glob(install_path)) > 0 then
-    fn.system({'git', 'clone', '--depth', '1', 'https://github.com/wbthomason/packer.nvim', install_path})
-    vim.cmd [[packadd packer.nvim]]
-    return true
-  end
-  return false
+	local fn = vim.fn
+	local install_path = fn.stdpath('data')..'/site/pack/packer/start/packer.nvim'
+	if fn.empty(fn.glob(install_path)) > 0 then
+		fn.system({'git', 'clone', '--depth', '1', 'https://github.com/wbthomason/packer.nvim', install_path})
+		vim.cmd [[packadd packer.nvim]]
+		return true
+	end
+	return false
 end
 
 local packer_bootstrap = ensure_packer()
@@ -19,6 +19,7 @@ return require('packer').startup(function(use)
 	use 'ThePrimeagen/harpoon'
 	use "lukas-reineke/lsp-format.nvim"
 	use "nvim-treesitter/nvim-treesitter-context"
+	--use "jmutton2/scribe"
 
 	use { '~/personal/scribe' }
 	use {"nvim-treesitter/nvim-treesitter", run = ":TSUpdate"}
@@ -73,10 +74,36 @@ return require('packer').startup(function(use)
 		}
 	}
 
+	use({
+		"epwalsh/obsidian.nvim",
+		tag = "*",  -- recommended, use latest release instead of latest commit
+		requires = {
+			-- Required.
+			"nvim-lua/plenary.nvim",
+
+			-- see below for full list of optional dependencies 👇
+		},
+		config = function()
+			require("obsidian").setup({
+				workspaces = {
+					{
+						name = "personal",
+						path = "~/vaults/personal",
+					},
+					{
+						name = "work",
+						path = "~/vaults/work",
+					},
+				},
+
+				-- see below for full list of options 👇
+			})
+		end,
+	})
 
 	-- Automatically set up your configuration after cloning packer.nvim
 	-- Put this at the end after all plugins
-  if packer_bootstrap then
-    require('packer').sync()
-  end
+	if packer_bootstrap then
+		require('packer').sync()
+	end
 end)
