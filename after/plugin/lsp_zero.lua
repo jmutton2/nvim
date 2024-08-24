@@ -4,24 +4,42 @@ lsp.preset("recommended")
 
 require('mason').setup({})
 require('mason-lspconfig').setup({
-  -- Replace the language servers listed here
-  -- with the ones you want to install
-  ensure_installed = {'tsserver', 'gopls', 'rust_analyzer', 'svelte', 'zls', 'tailwindcss', 'ruby_lsp', 'pyright', 'lua_ls'},
-  handlers = {
-    lsp.default_setup,
-  }
+  ensure_installed = {'tsserver','rust_analyzer', 'gopls', 'svelte', 'zls', 'tailwindcss', 'ruby_lsp', 'pyright', 'lua_ls'}
 })
 
--- Fix Undefined global 'vim'
-lsp.configure('lua_ls', {
-    settings = {
-        Lua = {
-            diagnostics = {
-                globals = { 'vim' }
-            }
+lsp.setup()
+
+require('lspconfig').lua_ls.setup {
+  on_init = function(client)
+    local path = client.workspace_folders[1].name
+    if vim.loop.fs_stat(path..'/.luarc.json') or vim.loop.fs_stat(path..'/.luarc.jsonc') then
+      return
+    end
+
+    client.config.settings.Lua = vim.tbl_deep_extend('force', client.config.settings.Lua, {
+      runtime = {
+        -- Tell the language server which version of Lua you're using
+        -- (most likely LuaJIT in the case of Neovim)
+        version = 'LuaJIT'
+      },
+      -- Make the server aware of Neovim runtime files
+      workspace = {
+        checkThirdParty = false,
+        library = {
+          vim.env.VIMRUNTIME,
+          -- Depending on the usage, you might want to add additional paths here.
+          "${3rd}/love2d/library"
+          -- "${3rd}/busted/library",
         }
-    }
-})
+        -- or pull in all of 'runtimepath'. NOTE: this is a lot slower
+        -- library = vim.api.nvim_get_runtime_file("", true)
+      }
+    })
+  end,
+  settings = {
+    Lua = {}
+  }
+}
 
 local cmp = require('cmp')
 local cmp_action = require('lsp-zero').cmp_action()
@@ -72,8 +90,6 @@ lsp.on_attach(function(client, bufnr)
   vim.keymap.set("n", "<leader>vrn", function() vim.lsp.buf.rename() end, opts)
   vim.keymap.set("i", "<C-h>", function() vim.lsp.buf.signature_help() end, opts)
 end)
-
-lsp.setup()
 
 vim.diagnostic.config({
     virtual_text = true
