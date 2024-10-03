@@ -26,6 +26,7 @@ local on_attach = function(client, bufnr)
 end
 
 require("lspconfig").gopls.setup { on_attach = on_attach }
-require("lspconfig").tsserver.setup { on_attach = on_attach }
+require("lspconfig").eslint.setup { on_attach = on_attach }
 require("lspconfig").svelte.setup { on_attach = on_attach }
+require("lspconfig").ruby_lsp.setup { on_attach = on_attach }
 require("lspconfig").rust_analyzer.setup { on_attach = on_attach }

@@ -19,9 +19,10 @@ return require('packer').startup(function(use)
 	use 'ThePrimeagen/harpoon'
 	use "lukas-reineke/lsp-format.nvim"
 	use "nvim-treesitter/nvim-treesitter-context"
-	--use "jmutton2/scribe"
 
-	use { '~/personal/scribe' }
+	--	use { '~/personal/scribe' }
+	use "jmutton2/scribe"
+
 	use {"nvim-treesitter/nvim-treesitter", run = ":TSUpdate"}
 
 	use {
@@ -43,7 +44,6 @@ return require('packer').startup(function(use)
 		end
 	}
 
-
 	use {
 		'tanvirtin/vgit.nvim',
 		requires = {
@@ -55,7 +55,6 @@ return require('packer').startup(function(use)
 		'VonHeikemen/lsp-zero.nvim',
 		branch = 'v3.x',
 		requires = {
-			--- Uncomment the two plugins below if you want to manage the language servers from neovim
 			{'neovim/nvim-lspconfig'},
 			{'williamboman/mason.nvim'},
 			{'williamboman/mason-lspconfig.nvim'},
@@ -76,33 +75,23 @@ return require('packer').startup(function(use)
 
 	use({
 		"epwalsh/obsidian.nvim",
-		tag = "*",  -- recommended, use latest release instead of latest commit
+		tag = "*",
 		requires = {
-			-- Required.
 			"nvim-lua/plenary.nvim",
-
-			-- see below for full list of optional dependencies 👇
 		},
 		config = function()
 			require("obsidian").setup({
 				workspaces = {
 					{
 						name = "personal",
-						path = "~/vaults/personal",
-					},
-					{
-						name = "work",
-						path = "~/vaults/work",
+						path = "~/vaults",
 					},
 				},
-
-				-- see below for full list of options 👇
 			})
 		end,
 	})
 
 	-- Automatically set up your configuration after cloning packer.nvim
-	-- Put this at the end after all plugins
 	if packer_bootstrap then
 		require('packer').sync()
 	end
