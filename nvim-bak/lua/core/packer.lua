@@ -37,14 +37,6 @@ return require('packer').startup(function(use)
 	}
 
 	use {
-		'rose-pine/neovim',
-		as = 'rose-pine',
-		config = function()
-			vim.cmd('colorscheme rose-pine')
-		end
-	}
-
-	use {
 		'tanvirtin/vgit.nvim',
 		requires = {
 			'nvim-lua/plenary.nvim'
@@ -73,23 +65,23 @@ return require('packer').startup(function(use)
 		}
 	}
 
-	use({
-		"epwalsh/obsidian.nvim",
-		tag = "*",
-		requires = {
-			"nvim-lua/plenary.nvim",
-		},
-		config = function()
-			require("obsidian").setup({
-				workspaces = {
-					{
-						name = "personal",
-						path = "~/vaults",
-					},
-				},
-			})
-		end,
-	})
+	--use({
+		--"epwalsh/obsidian.nvim",
+		--tag = "*",
+		--requires = {
+			--"nvim-lua/plenary.nvim",
+		--},
+		--config = function()
+			--require("obsidian").setup({
+				--workspaces = {
+					--{
+						--name = "personal",
+						--path = "~/vaults",
+					--},
+				--},
+			--})
+		--end,
+	--})
 
 	-- Automatically set up your configuration after cloning packer.nvim
 	if packer_bootstrap then
