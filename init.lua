@@ -72,6 +72,10 @@ vim.keymap.set("n", "<leader>gp", ":Gitsigns preview_hunk<CR>", {})
 
 vim.keymap.set("n", "<C-f>", "<cmd>silent !tmux neww tmux-sessionizer<CR>")
 
+-- Obsidian
+vim.keymap.set("n", "<leader>nd", "<cmd>ObsidianToday<CR>", { desc = "Open today's daily note (Obsidian)" })
+vim.keymap.set("n", "<leader>nn", "<cmd>ObsidianNew<CR>", { desc = "Open today's daily note (Obsidian)" })
+
 vim.api.nvim_create_autocmd('TextYankPost', {
     group = vim.api.nvim_create_augroup('HighlightYank', {}),
     pattern = '*',
@@ -94,23 +98,9 @@ if not (vim.uv or vim.loop).fs_stat(lazypath) then
 end ---@diagnostic disable-next-line: undefined-field
 vim.opt.rtp:prepend(lazypath)
 
---  To check the current status of your plugins, run
---    :Lazy
---
---  You can press `?` in this menu for help. Use `:q` to close the window
---
-
 require('lazy').setup({
   -- NOTE: Plugins can be added with a link (or for a github repo: 'owner/repo' link).
   'tpope/vim-sleuth', -- Detect tabstop and shiftwidth automatically
-
-  -- {
-  -- dir = "~/personal/transmute",
-  -- name = "transmute",
-  -- config = function()
-  -- require("transmute").setup()
-  -- end,
-  -- },
 
   { -- Adds git related signs to the gutter, as well as utilities for managing changes
     'lewis6991/gitsigns.nvim',
@@ -127,36 +117,40 @@ require('lazy').setup({
 
   {
     "epwalsh/obsidian.nvim",
-    version = "*",  -- recommended, use latest release instead of latest commit
-    lazy = true,
-    ft = "markdown",
-    -- Replace the above line with this if you only want to load obsidian.nvim for markdown files in your vault:
-    -- event = {
-    --   -- If you want to use the home shortcut '~' here you need to call 'vim.fn.expand'.
-    --   -- E.g. "BufReadPre " .. vim.fn.expand "~" .. "/my-vault/*.md"
-    --   -- refer to `:h file-pattern` for more examples
-    --   "BufReadPre path/to/my-vault/*.md",
-    --   "BufNewFile path/to/my-vault/*.md",
-    -- },
+    version = "*",
     dependencies = {
-      -- Required.
       "nvim-lua/plenary.nvim",
-
-      -- see below for full list of optional dependencies 👇
     },
     opts = {
       workspaces = {
         {
-          name = "personal",
-          path = "~/vaults/personal",
-        },
-        {
-          name = "work",
-          path = "~/vaults/work",
+          name = "vault",
+          path = "~/vaults",
         },
       },
-
-      -- see below for full list of options 👇
+      daily_notes = {
+        folder = "dailies",
+        -- change the date format for the ID of daily notes.
+        date_format = "%Y-%m-%d",
+        -- date format of the default alias of daily notes.
+        alias_format = "%B %-d, %Y",
+        -- default tags to add to each new daily note created.
+        default_tags = { "daily-notes" },
+        -- Optional, if you want to automatically insert a template from your template directory like 'daily.md'
+        template = nil
+      },
+      note_id_func = function(title)
+        local suffix = ""
+          if title then
+          local cleaned = title
+            :gsub("%s+", "_")
+            :gsub("[^%w_]", "")
+            :lower()
+          return cleaned
+        else
+          return "untitled_note"
+        end
+      end,
     },
   },
 
@@ -293,6 +287,7 @@ require('lazy').setup({
       },
     },
   },
+
   {
     -- Main LSP Configuration
     'neovim/nvim-lspconfig',
@@ -686,7 +681,7 @@ require('lazy').setup({
     main = 'nvim-treesitter.configs', -- Sets main module to use for opts
     -- [[ Configure Treesitter ]] See `:help nvim-treesitter`
     opts = {
-      ensure_installed = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc', 'ruby', 'cpp' },
+      ensure_installed = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc', 'ruby', 'go' },
       -- Autoinstall languages that are not installed
       auto_install = true,
       highlight = {
@@ -704,20 +699,6 @@ require('lazy').setup({
     --    - Incremental selection: Included, see `:help nvim-treesitter-incremental-selection-mod`
     --    - Show your current context: https://github.com/nvim-treesitter/nvim-treesitter-context
     --    - Treesitter + textobjects: https://github.com/nvim-treesitter/nvim-treesitter-textobjects
-  },
-
-  {
-    "kawre/leetcode.nvim",
-    build = ":TSUpdate html", -- if you have `nvim-treesitter` installed
-    dependencies = {
-      "nvim-telescope/telescope.nvim",
-      -- "ibhagwan/fzf-lua",
-      "nvim-lua/plenary.nvim",
-      "MunifTanjim/nui.nvim",
-    },
-    opts = {
-      lang = "python3"
-    },
   },
 
 })
