@@ -87,6 +87,8 @@ vim.api.nvim_create_autocmd('TextYankPost', {
     end,
 })
 
+vim.keymap.set("n", "<leader>u", vim.cmd.UndotreeToggle)
+
 -- [[ Install `lazy.nvim` plugin manager ]]
 local lazypath = vim.fn.stdpath 'data' .. '/lazy/lazy.nvim'
 if not (vim.uv or vim.loop).fs_stat(lazypath) then
@@ -99,8 +101,110 @@ end ---@diagnostic disable-next-line: undefined-field
 vim.opt.rtp:prepend(lazypath)
 
 require('lazy').setup({
-  -- NOTE: Plugins can be added with a link (or for a github repo: 'owner/repo' link).
-  'tpope/vim-sleuth', -- Detect tabstop and shiftwidth automatically
+  'tpope/vim-sleuth',
+
+  {
+    dir = "~/personal/dominion.nvim",
+    config = function()
+      require("dominion").setup({
+        keybind = "<leader>ai",
+        timeout = 30000,
+        save_requests = true,
+        storage_dir = vim.fn.stdpath("data") .. "/dominion",
+      })
+    end
+  },
+
+  {
+    "ThePrimeagen/99",
+    config = function()
+      local _99 = require("99")
+
+      -- For logging that is to a file if you wish to trace through requests
+      -- for reporting bugs, i would not rely on this, but instead the provided
+      -- logging mechanisms within 99.  This is for more debugging purposes
+      local cwd = vim.uv.cwd()
+      local basename = vim.fs.basename(cwd)
+      _99.setup({
+        logger = {
+          level = _99.DEBUG,
+          path = "/tmp/" .. basename .. ".99.debug",
+          print_on_error = true,
+        },
+
+        --- A new feature that is centered around tags
+        completion = {
+          --- Defaults to .cursor/rules
+          -- I am going to disable these until i understand the
+          -- problem better.  Inside of cursor rules there is also
+          -- application rules, which means i need to apply these
+          -- differently
+          -- cursor_rules = "<custom path to cursor rules>"
+
+          --- A list of folders where you have your own SKILL.md
+          --- Expected format:
+          --- /path/to/dir/<skill_name>/SKILL.md
+          ---
+          --- Example:
+          --- Input Path:
+          --- "scratch/custom_rules/"
+          ---
+          --- Output Rules:
+          --- {path = "scratch/custom_rules/vim/SKILL.md", name = "vim"},
+          --- ... the other rules in that dir ...
+          ---
+          custom_rules = {
+            "scratch/custom_rules/",
+          },
+
+          --- What autocomplete do you use.  We currently only
+          --- support cmp right now
+          source = "cmp",
+        },
+
+        --- WARNING: if you change cwd then this is likely broken
+        --- ill likely fix this in a later change
+        ---
+        --- md_files is a list of files to look for and auto add based on the location
+        --- of the originating request.  That means if you are at /foo/bar/baz.lua
+        --- the system will automagically look for:
+        --- /foo/bar/AGENT.md
+        --- /foo/AGENT.md
+        --- assuming that /foo is project root (based on cwd)
+        md_files = {
+          "AGENT.md",
+        },
+      })
+
+      -- Create your own short cuts for the different types of actions
+      vim.keymap.set("n", "<leader>9f", function()
+        _99.fill_in_function()
+      end)
+      -- take extra note that i have visual selection only in v mode
+      -- technically whatever your last visual selection is, will be used
+      -- so i have this set to visual mode so i dont screw up and use an
+      -- old visual selection
+      --
+      -- likely ill add a mode check and assert on required visual mode
+      -- so just prepare for it now
+      vim.keymap.set("v", "<leader>9v", function()
+        _99.visual()
+      end)
+
+      --- if you have a request you dont want to make any changes, just cancel it
+      vim.keymap.set("v", "<leader>9s", function()
+        _99.stop_all_requests()
+      end)
+
+      --- Example: Using rules + actions for custom behaviors
+      --- Create a rule file like ~/.rules/debug.md that defines custom behavior.
+      --- For instance, a "debug" rule could automatically add printf statements
+      --- throughout a function to help debug its execution flow.
+      vim.keymap.set("n", "<leader>9fd", function()
+        _99.fill_in_function()
+      end)
+    end,
+  },
 
   { -- Adds git related signs to the gutter, as well as utilities for managing changes
     'lewis6991/gitsigns.nvim',
@@ -138,6 +242,9 @@ require('lazy').setup({
         default_tags = { "daily-notes" },
         -- Optional, if you want to automatically insert a template from your template directory like 'daily.md'
         template = nil
+      },
+      ui = {
+        enable = false
       },
       note_id_func = function(title)
         local suffix = ""
@@ -247,7 +354,7 @@ require('lazy').setup({
       vim.keymap.set('n', '<leader>fd', builtin.diagnostics, { desc = '[S]earch [D]iagnostics' })
       --vim.keymap.set('n', '<leader>sr', builtin.resume, { desc = '[S]earch [R]esume' })
       --vim.keymap.set('n', '<leader>s.', builtin.oldfiles, { desc = '[S]earch Recent Files ("." for repeat)' })
-      vim.keymap.set('n', '<leader><leader>', builtin.buffers, { desc = '[ ] Find existing buffers' })
+      --vim.keymap.set('n', '<leader><leader>', builtin.buffers, { desc = '[ ] Find existing buffers' })
 
       -- Slightly advanced example of overriding default behavior and theme
       vim.keymap.set('n', '<leader>/', function()
@@ -279,12 +386,18 @@ require('lazy').setup({
     -- `lazydev` configures Lua LSP for your Neovim config, runtime and plugins
     -- used for completion, annotations and signatures of Neovim apis
     'folke/lazydev.nvim',
-    ft = 'lua',
-    opts = {
-      library = {
-        -- Load luvit types when the `vim.uv` word is found
-        { path = '${3rd}/luv/library', words = { 'vim%.uv' } },
-      },
+  },
+
+
+  {
+    "S1M0N38/love2d.nvim",
+    event = "VeryLazy",
+    version = "2.*",
+    opts = { },
+    keys = {
+      { "<leader>v", ft = "lua", desc = "LÖVE" },
+      { "<leader>vv", "<cmd>LoveRun<cr>", ft = "lua", desc = "Run LÖVE" },
+      { "<leader>vs", "<cmd>LoveStop<cr>", ft = "lua", desc = "Stop LÖVE" },
     },
   },
 
@@ -605,25 +718,13 @@ require('lazy').setup({
         --
         -- No, but seriously. Please read `:help ins-completion`, it is really good!
         mapping = cmp.mapping.preset.insert {
-          -- Select the [n]ext item
           ['<C-n>'] = cmp.mapping.select_next_item(),
-          -- Select the [p]revious item
           ['<C-p>'] = cmp.mapping.select_prev_item(),
 
-          -- Scroll the documentation window [b]ack / [f]orward
           ['<C-b>'] = cmp.mapping.scroll_docs(-4),
           ['<C-f>'] = cmp.mapping.scroll_docs(4),
 
-          -- Accept ([y]es) the completion.
-          --  This will auto-import if your LSP supports it.
-          --  This will expand snippets if the LSP sent a snippet.
           ['<C-y>'] = cmp.mapping.confirm { select = true },
-
-          -- If you prefer more traditional completion keymaps,
-          -- you can uncomment the following lines
-          --['<CR>'] = cmp.mapping.confirm { select = true },
-          --['<Tab>'] = cmp.mapping.select_next_item(),
-          --['<S-Tab>'] = cmp.mapping.select_prev_item(),
 
           -- Manually trigger a completion from nvim-cmp.
           --  Generally you don't need this, because nvim-cmp will display
@@ -666,11 +767,13 @@ require('lazy').setup({
     end,
   },
 
-  {
-    'rose-pine/neovim',
+  { -- Theme
+    --'rose-pine/neovim',
+    'ellisonleao/gruvbox.nvim',
     priority = 1000, -- Make sure to load this before all the other start plugins.
     init = function()
-      vim.cmd.colorscheme 'rose-pine'
+      --vim.cmd.colorscheme 'rose-pine'
+      vim.cmd.colorscheme 'gruvbox'
       vim.cmd.hi 'Comment gui=none'
     end,
   },
@@ -678,45 +781,16 @@ require('lazy').setup({
   { -- Highlight, edit, and navigate code
     'nvim-treesitter/nvim-treesitter',
     build = ':TSUpdate',
-    main = 'nvim-treesitter.configs', -- Sets main module to use for opts
-    -- [[ Configure Treesitter ]] See `:help nvim-treesitter`
+    main = 'nvim-treesitter.configs',
     opts = {
       ensure_installed = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc', 'ruby', 'go' },
-      -- Autoinstall languages that are not installed
       auto_install = true,
       highlight = {
         enable = true,
-        -- Some languages depend on vim's regex highlighting system (such as Ruby) for indent rules.
-        --  If you are experiencing weird indenting issues, add the language to
-        --  the list of additional_vim_regex_highlighting and disabled languages for indent.
         additional_vim_regex_highlighting = { 'ruby' },
       },
       indent = { enable = true, disable = { 'ruby' } },
     },
-    -- There are additional nvim-treesitter modules that you can use to interact
-    -- with nvim-treesitter. You should go explore a few and see what interests you:
-    --
-    --    - Incremental selection: Included, see `:help nvim-treesitter-incremental-selection-mod`
-    --    - Show your current context: https://github.com/nvim-treesitter/nvim-treesitter-context
-    --    - Treesitter + textobjects: https://github.com/nvim-treesitter/nvim-treesitter-textobjects
   },
 
-})
-
-vim.keymap.set("n", "<leader>u", vim.cmd.UndotreeToggle)
-
-
-local function rubocop_cmd()
-  local gemfile = vim.fn.findfile("Gemfile", ".;")
-  if gemfile ~= "" then
-    return { "bundle", "exec", "rubocop", "--lsp" }
-  else
-    return { vim.fn.stdpath("data") .. "/mason/bin/rubocop", "--lsp" }
-  end
-end
-
-require('lspconfig').rubocop.setup({
-  cmd = rubocop_cmd(),
-  root_dir = require('lspconfig.util').root_pattern("Gemfile", ".git"),
-  autostart = true,
 })
